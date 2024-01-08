@@ -1,10 +1,13 @@
 import React from 'react';
 import { SafeAreaView, Text } from 'react-native';
+import { LoginCheck } from './LoginCheck';
 
-export const Home: React.FC = () => {
+const Home: React.FC = () => {
   return (
     <SafeAreaView>
       <Text>Home</Text>
     </SafeAreaView>
   );
 };
+
+export default LoginCheck(Home);
