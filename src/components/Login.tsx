@@ -42,13 +42,13 @@ export const Login: React.FC = () => {
       const res = await authApi.loginMail(data);
       await AsyncStorage.setItem('accessToken', res.data.accessToken);
       setTimeout(() => {
+        setLoading(false);
         navigation.navigate('Home');
       }, 3000);
     } catch (error) {
+      setLoading(false);
       alert('ログインに失敗しました');
       console.log(error);
-    } finally {
-      setLoading(false);
     }
   };
 
