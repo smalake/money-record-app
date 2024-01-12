@@ -96,6 +96,10 @@ export const Login: React.FC = () => {
       <View style={styles.button}>
         <Button title='ログイン' loading={loading} onPress={handleSubmit(onSubmit)} />
       </View>
+      <View style={styles.button}>
+        <Button title='新規登録' type='outline' onPress={() => navigation.navigate('Register')} />
+      </View>
+
       <StatusBar style='auto' />
     </SafeAreaView>
   );
@@ -121,5 +125,6 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
     width: '50%',
+    marginBottom: 20,
   },
 });
