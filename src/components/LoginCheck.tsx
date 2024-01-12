@@ -12,7 +12,7 @@ export const LoginCheck = <P extends object>(WrappedComponent: React.ComponentTy
       // ログイン状態を確認する関数
       const checkLoggedIn = async () => {
         try {
-          const token = await AsyncStorage.getItem('token');
+          const token = await AsyncStorage.getItem('accessToken');
           if (token === null) {
             // ログインされていない場合はLoginページにリダイレクト
             navigation.navigate('Login');
