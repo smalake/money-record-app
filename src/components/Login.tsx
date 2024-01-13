@@ -40,11 +40,22 @@ export const Login: React.FC = () => {
     try {
       // ログイン処理
       const res = await authApi.loginMail(data);
-      await AsyncStorage.setItem('accessToken', res.data.accessToken);
-      setTimeout(() => {
-        setLoading(false);
-        navigation.navigate('Home');
-      }, 3000);
+      switch (res.status) {
+        case 200:
+          await AsyncStorage.setItem('accessToken', res.data.accessToken);
+          setTimeout(() => {
+            setLoading(false);
+            navigation.navigate('Home');
+          }, 3000);
+          break;
+        case 400:
+          alert('リクエストが不正です');
+        case 401:
+          alert('メールアドレスまたはパスワードが間違っています');
+          break;
+        default:
+          alert('サーバーエラーが発生しました');
+      }
     } catch (error) {
       setLoading(false);
       alert('ログインに失敗しました');
@@ -82,6 +93,7 @@ export const Login: React.FC = () => {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               placeholder='パスワード'
+              keyboardType='visible-password'
               leftIcon={{ type: 'font-awesome', name: 'lock' }}
               secureTextEntry={true}
               value={value}
