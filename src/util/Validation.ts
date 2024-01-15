@@ -21,3 +21,13 @@ export const verifyEmailValidation = yup.object().shape({
     .required('認証コードを入力してください。')
     .matches(/^[0-9]*$/, { message: '数字を入力してください。' }),
 });
+
+export const homeValidation = yup.object().shape({
+  amount: yup
+    .string()
+    .required('金額は必須です。')
+    .matches(/^[0-9]*$/, { message: '数字を入力してください。' }),
+  partner: yup.string().required('相手は必須です。'),
+  // date: yup.string().required('日付は必須です。'),
+  // period: yup.string().required('期限日は必須です。'),
+});
