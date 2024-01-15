@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
     width: '50%',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   error: {
     width: '80%',
