@@ -6,15 +6,20 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { homeValidation } from '../util/Validation';
 import { Button, Dialog, Icon, Input } from 'react-native-elements';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { memoApi } from '../api/memo';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
 
 type FormData = {
   amount: string;
   partner: string;
   date?: Date;
-  period?: string;
+  period?: Date;
   memo?: string;
 };
 const Home: React.FC = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false); // ログインボタンのローディング表示
   const [date, setDate] = useState(new Date());
@@ -49,7 +54,19 @@ const Home: React.FC = () => {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
+      const req = { ...data, amount: Number(data.amount), date: date, period: period };
+      const res = await memoApi.register(req);
+      if (res.status === 200) {
+        alert('登録しました');
+      } else if (res.status === 401) {
+        alert('再ログインしてください');
+        navigation.navigate('Login');
+      } else {
+        alert('登録に失敗しました');
+      }
     } catch (error) {
+      alert('登録に失敗しました');
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -113,7 +130,7 @@ const Home: React.FC = () => {
           <Controller
             control={control}
             name='memo'
-            rules={{ required: true }}
+            // rules={{ required: true }}
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
                 placeholder='メモを入力'
