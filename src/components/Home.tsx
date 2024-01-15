@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, Text, View, StyleSheet } from 'react-native';
 import { LoginCheck } from './LoginCheck';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { homeValidation } from '../util/Validation';
 import { Button, Dialog, Icon, Input } from 'react-native-elements';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 type FormData = {
@@ -27,7 +26,6 @@ const Home: React.FC = () => {
     control,
     formState: { errors },
   } = useForm<FormData>({ resolver: yupResolver(homeValidation) });
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const toggleDate = () => {
     setDateVisible(!dateVasible);
