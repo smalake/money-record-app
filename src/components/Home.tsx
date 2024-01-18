@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Text, View, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, View, StyleSheet, TouchableHighlight, FlatList } from 'react-native';
 import { LoginCheck } from './LoginCheck';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { homeValidation } from '../util/Validation';
-import { Button, Dialog, Icon, Input } from 'react-native-elements';
+import { Button, Dialog, Icon, Input, Overlay } from 'react-native-elements';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { memoApi } from '../api/memo';
 import { useNavigation } from '@react-navigation/native';
@@ -26,6 +26,13 @@ const Home: React.FC = () => {
   const [dateVasible, setDateVisible] = useState(false);
   const [period, setPeriod] = useState(new Date());
   const [periodVisible, setPeriodVisible] = useState(false);
+  const testData = [
+    { id: 1, amount: 1000, partner: 'test', date: '2021-10-01', period: '2021-10-31', memo: 'test' },
+    { id: 2, amount: 2000, partner: 'test2', date: '2021-10-01', period: '2021-10-31', memo: 'test2' },
+    { id: 3, amount: 3000, partner: 'test3', date: '2021-10-01', period: '2021-10-31', memo: 'test3' },
+    { id: 4, amount: 4000, partner: 'test4', date: '2021-10-01', period: '2021-10-31', memo: 'test4' },
+  ];
+  const testHeader = ['取引相手', '金額', '取引日', '期限日', 'メモ'];
   const {
     handleSubmit,
     control,
@@ -51,6 +58,9 @@ const Home: React.FC = () => {
   const toggleDialog = () => {
     setVisible(!visible);
   };
+  const onPushed = (id: number) => {
+    console.log(id);
+  };
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
@@ -73,11 +83,38 @@ const Home: React.FC = () => {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <Text>Home</Text>
-      <View>
-        <Button title='Open Simple Dialog' onPress={toggleDialog} buttonStyle={styles.button} />
+      <View style={styles.listStyle}>
+        <Text style={styles.listItemPartner}>取引相手</Text>
+        <Text style={styles.listItemAmount}>金額</Text>
+        <Text style={styles.listItemDate}>取引日</Text>
+        <Text style={styles.listItemPeriod}>期限日</Text>
+        <Text style={styles.listItemMemo}>メモ</Text>
       </View>
-      <Dialog isVisible={visible} overlayStyle={{ paddingTop: 50 }}>
+      <FlatList
+        data={testData}
+        renderItem={({ item }) => (
+          <TouchableHighlight
+            onPress={() => {
+              onPushed(item.id);
+            }}
+            underlayColor={'blue'}
+          >
+            <View style={styles.listStyle}>
+              <Text style={styles.listItemPartner}>{item.partner}</Text>
+              <Text style={styles.listItemAmount}>{item.amount}</Text>
+              <Text style={styles.listItemDate}>{item.date}</Text>
+              <Text style={styles.listItemPeriod}>{item.period}</Text>
+              <Text style={styles.listItemMemo}>{item.memo}</Text>
+            </View>
+          </TouchableHighlight>
+        )}
+        keyExtractor={(item) => item.id.toString()}
+      />
+
+      <View style={styles.addButton}>
+        <Icon name='plus-circle' size={50} color={'skyblue'} type='font-awesome-5' onPress={toggleDialog} />
+      </View>
+      <Overlay isVisible={visible} overlayStyle={{ paddingTop: 100 }} fullScreen={true}>
         <View style={styles.formLabel}>
           <Text>金額</Text>
         </View>
@@ -213,7 +250,7 @@ const Home: React.FC = () => {
             />
           </View>
         </View>
-      </Dialog>
+      </Overlay>
     </SafeAreaView>
   );
 };
@@ -224,8 +261,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    width: '100%',
+  },
+  listStyle: {
+    flexDirection: 'row',
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    width: '100%',
+    backgroundColor: 'skyblue',
+  },
+  listItemPartner: {
+    flexGrow: 2,
+    textAlign: 'center',
+    fontSize: 17,
+  },
+  listItemAmount: {
+    flexGrow: 1,
+    textAlign: 'center',
+    fontSize: 17,
+  },
+  listItemDate: {
+    flexGrow: 2,
+    textAlign: 'center',
+    fontSize: 17,
+  },
+  listItemPeriod: {
+    flexGrow: 2,
+    textAlign: 'center',
+    fontSize: 17,
+  },
+  listItemMemo: {
+    flexGrow: 5,
+    textAlign: 'center',
+    fontSize: 17,
+  },
+  addButton: {
+    position: 'absolute',
+    right: 30,
+    bottom: 30,
+    zIndex: 100,
   },
   date: {
     flexDirection: 'row',
