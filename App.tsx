@@ -30,7 +30,7 @@ const App = () => {
         }}
         style={{ marginLeft: 10 }}
       >
-        <Text style={{ color: 'blue' }}>閉じる</Text>
+        <Text style={{ color: '#1e90ff' }}>閉じる</Text>
       </TouchableOpacity>
     );
   };
