@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Text, View, StyleSheet, TouchableHighlight, FlatList, Image } from 'react-native';
+import { SafeAreaView, Text, View, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { LoginCheck } from './LoginCheck';
 import { Icon } from 'react-native-elements';
 import { memoApi } from '../api/memo';
@@ -20,7 +20,6 @@ const Home: React.FC = () => {
   const typeValue = ['貸し', '借り'];
 
   const toggleDialog = () => {
-    // setVisible(!visible);
     navigation.navigate('Event');
   };
   const onPushed = (id: number) => {
@@ -32,12 +31,11 @@ const Home: React.FC = () => {
         data={testData}
         style={{ flex: 1 }}
         renderItem={({ item }) => (
-          <TouchableHighlight
+          <TouchableOpacity
             style={{ flex: 1 }}
             onPress={() => {
               onPushed(item.id);
             }}
-            underlayColor={'blue'}
           >
             <View style={styles.listStyle}>
               <View style={styles.listItemDate}>
@@ -65,9 +63,8 @@ const Home: React.FC = () => {
                   <Text style={{ textAlign: 'right' }}>{item.memo}</Text>
                 </View>
               </View>
-              <View style={{ height: 1, backgroundColor: 'gray', marginTop: 10 }} />
             </View>
-          </TouchableHighlight>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id.toString()}
       />
@@ -92,6 +89,9 @@ const styles = StyleSheet.create({
   listStyle: {
     paddingHorizontal: 15,
     marginVertical: 5,
+    borderBottomWidth: 1,
+    borderColor: '#bcbcbc',
+    paddingBottom: 8,
   },
   listItemDate: {
     alignItems: 'flex-end',
@@ -101,7 +101,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   listItemAmount: {
-    // marginLeft: 10,
     fontSize: 40,
     fontWeight: 'bold',
   },
