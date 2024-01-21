@@ -44,13 +44,14 @@ const App = () => {
         />
         <Stack.Screen name='Register' component={Register} options={{ headerTitle: 'ユーザー登録' }} />
         <Stack.Screen name='VerifyEmail' component={VerifyEmail} options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name='Home' component={Home} />
+        <Stack.Screen name='Home' component={Home} options={{ headerTitle: '一覧' }} />
         <Stack.Screen
           name='Event'
           component={Event}
           options={{
             presentation: 'modal',
             animation: 'default',
+            headerTitle: '貸し借り登録',
             headerLeft: () => <BackButton />,
           }}
         />
