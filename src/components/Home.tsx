@@ -49,9 +49,9 @@ const Home: React.FC = () => {
                 <View style={{ flexDirection: 'row', alignSelf: 'center', alignItems: 'center' }}>
                   <View>
                     {item.type === 0 ? (
-                      <Image source={require('../../assets/kari.png')} style={styles.icon} />
-                    ) : (
                       <Image source={require('../../assets/kasi.png')} style={styles.icon} />
+                    ) : (
+                      <Image source={require('../../assets/kari.png')} style={styles.icon} />
                     )}
                   </View>
                   <View>
