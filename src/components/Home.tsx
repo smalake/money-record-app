@@ -1,77 +1,114 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, Text, View, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { LoginCheck } from './LoginCheck';
-import { Icon } from 'react-native-elements';
-import { memoApi } from '../api/memo';
+import { Icon, Dialog } from 'react-native-elements';
+import { memoApi } from '../api/memoApi';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 
+type Data = {
+  id: number;
+  amount: number;
+  partner: string;
+  date: string;
+  period: string;
+  memo: string;
+  type: number;
+};
 const Home: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loading, setLoading] = useState(false); // ログインボタンのローディング表示
-  const testData = [
-    { id: 1, amount: 1000, partner: 'test', date: '2021-10-01', period: '2021-10-31', memo: 'test', type: 0 },
-    { id: 2, amount: 2000, partner: 'test2', date: '2021-10-01', period: '2021-10-31', memo: 'test2', type: 1 },
-    { id: 3, amount: 3000, partner: 'test3', date: '2021-10-01', period: '2021-10-31', memo: 'test3', type: 0 },
-    { id: 4, amount: 4000, partner: 'test4', date: '2021-10-01', period: '2021-10-31', memo: 'test4', type: 1 },
-  ];
+  const [data, setData] = useState<Data[]>([]); // メモ一覧
 
   const typeValue = ['貸し', '借り'];
 
   const toggleDialog = () => {
     navigation.navigate('Event');
   };
+
+  // イベント一覧を取得
+  useEffect(() => {
+    const getMemo = async () => {
+      setLoading(true);
+      try {
+        const res = await memoApi.getMemo();
+        if (res.status === 200) {
+          setData(res.data);
+        } else if (res.status === 401) {
+          alert('再ログインしてください');
+          navigation.navigate('Login');
+        } else {
+          alert('サーバーエラーが発生しました');
+        }
+        console.log(res);
+      } catch (error: any) {
+        alert('サーバーエラーが発生しました');
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getMemo();
+  }, []);
+
+  // イベント更新画面へ遷移
   const onPushed = (id: number) => {
     console.log(id);
   };
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={testData}
-        style={{ flex: 1 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
+      {loading ? (
+        <Dialog.Loading />
+      ) : (
+        <>
+          <FlatList
+            data={data}
             style={{ flex: 1 }}
-            onPress={() => {
-              onPushed(item.id);
-            }}
-          >
-            <View style={styles.listStyle}>
-              <View style={styles.listItemDate}>
-                <Text style={{ fontWeight: 'bold' }}>
-                  {item.date} 〜 {item.period}
-                </Text>
-              </View>
-              <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-                <View style={{ flexDirection: 'row', alignSelf: 'center', alignItems: 'center' }}>
-                  <View>
-                    {item.type === 0 ? (
-                      <Image source={require('../../assets/kasi.png')} style={styles.icon} />
-                    ) : (
-                      <Image source={require('../../assets/kari.png')} style={styles.icon} />
-                    )}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => {
+                  onPushed(item.id);
+                }}
+              >
+                <View style={styles.listStyle}>
+                  <View style={styles.listItemDate}>
+                    <Text style={{ fontWeight: 'bold' }}>
+                      {item.date} 〜 {item.period}
+                    </Text>
                   </View>
-                  <View>
-                    <Text style={styles.listItemAmount}>{item.amount}</Text>
+                  <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', alignSelf: 'center', alignItems: 'center' }}>
+                      <View>
+                        {item.type === 0 ? (
+                          <Image source={require('../../assets/kasi.png')} style={styles.icon} />
+                        ) : (
+                          <Image source={require('../../assets/kari.png')} style={styles.icon} />
+                        )}
+                      </View>
+                      <View>
+                        <Text style={styles.listItemAmount}>{item.amount}</Text>
+                      </View>
+                    </View>
+                    <View style={{ alignSelf: 'flex-end' }}>
+                      <Text>
+                        {item.partner}に{typeValue[item.type]}
+                      </Text>
+                      <Text style={{ textAlign: 'right' }}>{item.memo}</Text>
+                    </View>
                   </View>
                 </View>
-                <View style={{ alignSelf: 'flex-end' }}>
-                  <Text>
-                    {item.partner}に{typeValue[item.type]}
-                  </Text>
-                  <Text style={{ textAlign: 'right' }}>{item.memo}</Text>
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id.toString()}
-      />
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
 
-      <View style={styles.addButton}>
-        <Icon name='plus-circle' size={50} color={'skyblue'} type='font-awesome-5' onPress={toggleDialog} />
-      </View>
+          <View style={styles.addButton}>
+            <Icon name='plus-circle' size={50} color={'skyblue'} type='font-awesome-5' onPress={toggleDialog} />
+          </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };
