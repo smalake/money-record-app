@@ -6,7 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { homeValidation } from '../util/Validation';
 import { Button, Dialog, Icon, Input } from 'react-native-elements';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { memoApi } from '../api/memo';
+import { memoApi } from '../api/memoApi';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
