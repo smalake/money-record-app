@@ -18,7 +18,7 @@ type Data = {
 };
 const Home: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [loading, setLoading] = useState(false); // ログインボタンのローディング表示
+  const [loading, setLoading] = useState(false); // データ取得時のローディング表示
   const [data, setData] = useState<Data[]>([]); // メモ一覧
 
   const typeValue = ['貸し', '借り'];
