@@ -6,17 +6,11 @@ export const axiosClient = axios.create({
   baseURL: API_URL,
   withCredentials: true,
 });
-const getToken = async () => (await AsyncStorage.getItem('accessToken')) ?? '';
 
-// APIを叩く前に前処理を行う
 axiosClient.interceptors.request.use(async (config: any) => {
-  return {
-    ...config,
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${getToken()}`, //リクエストヘッダーにJWTを付けてサーバに渡す
-    },
-  };
+  const token = await AsyncStorage.getItem('accessToken');
+  config.headers.Authorization = token ? `Bearer ${token}` : '';
+  return config;
 });
 
 axiosClient.interceptors.response.use(
