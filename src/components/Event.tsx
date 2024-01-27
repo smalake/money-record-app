@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, Text, View, StyleSheet } from 'react-native';
 import { LoginCheck } from './LoginCheck';
 import { useForm, Controller } from 'react-hook-form';
@@ -7,10 +7,12 @@ import { homeValidation } from '../util/Validation';
 import { Button, Dialog, Icon, Input } from 'react-native-elements';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { memoApi } from '../api/memoApi';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { Picker } from '@react-native-picker/picker';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { UpdateFlgAtom } from '../recoil/UpdateFlgAtom';
 
 type FormData = {
   amount: string;
@@ -20,23 +22,73 @@ type FormData = {
   memo?: string;
 };
 
+type GetData = {
+  id: number;
+  amount: number;
+  partner: string;
+  date: string;
+  period: string;
+  memo: string;
+  type: number;
+};
+
 const Event: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [loading, setLoading] = useState(false); // ログインボタンのローディング表示
+  const route = useRoute<RouteProp<RootStackParamList, 'Event'>>();
+  const [loading, setLoading] = useState(false); // 画面読み込み時のローディング表示
+  const [buttonLoading, setButtonLoading] = useState(false); // ログインボタンのローディング表示
+  const [amount, setAmount] = useState(0);
+  const [partner, setPartner] = useState('');
+  const [memo, setMemo] = useState('');
   const [date, setDate] = useState(new Date());
   const [dateVisible, setDateVisible] = useState(false);
   const [period, setPeriod] = useState(new Date());
   const [periodVisible, setPeriodVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [selected, setSelected] = useState(0);
+  const [type, setType] = useState(0);
+  const [isCreate, setIsCreate] = useState(true);
+  const setUpdateFlg = useSetRecoilState(UpdateFlgAtom);
 
-  const selectedValue = ['貸す', '借りる'];
+  const selectedType = ['貸す', '借りる'];
+
+  useEffect(() => {
+    if (route.params?.id) {
+      const getMemoOne = async () => {
+        setLoading(true);
+        try {
+          const res = await memoApi.getOne(route.params!.id);
+          if (res.status === 200) {
+            setAmount(res.data.amount);
+            setPartner(res.data.partner);
+            setMemo(res.data.memo);
+            setDate(new Date(res.data.date));
+            setPeriod(new Date(res.data.period));
+            setType(res.data.type);
+            setIsCreate(false);
+            reset({ amount: res.data.amount.toString(), partner: res.data.partner });
+          } else if (res.status === 401) {
+            alert('再ログインしてください');
+            navigation.navigate('Login');
+          } else {
+            alert('サーバーエラーが発生しました');
+          }
+        } catch (error: any) {
+          alert('サーバーエラーが発生しました');
+          console.log(error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      getMemoOne();
+    }
+  }, [route.params?.id]);
 
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<FormData>({ resolver: yupResolver(homeValidation) });
+    reset,
+  } = useForm<FormData>({ resolver: yupResolver(homeValidation), defaultValues: { amount: amount.toString(), partner: partner } });
 
   const toggleDate = () => {
     setDateVisible(!dateVisible);
@@ -55,12 +107,14 @@ const Event: React.FC = () => {
   };
 
   const onSubmit = async (data: FormData) => {
-    setLoading(true);
+    setButtonLoading(true);
     try {
-      const req = { ...data, amount: Number(data.amount), date: date, period: period, type: selected };
+      const req = { ...data, amount: Number(data.amount), date: date, period: period, type: type };
       const res = await memoApi.register(req);
       if (res.status === 200) {
+        setUpdateFlg(true);
         alert('登録しました');
+        navigation.navigate('Home');
       } else if (res.status === 401) {
         alert('再ログインしてください');
         navigation.navigate('Login');
@@ -71,7 +125,30 @@ const Event: React.FC = () => {
       alert('登録に失敗しました');
       console.log(error);
     } finally {
-      setLoading(false);
+      setButtonLoading(false);
+    }
+  };
+
+  const onSubmitUpdate = async (data: FormData) => {
+    setButtonLoading(true);
+    try {
+      const req = { ...data, id: route.params?.id, amount: Number(data.amount), date: date, period: period, type: type };
+      const res = await memoApi.update(req);
+      if (res.status === 200) {
+        setUpdateFlg(true);
+        alert('登録しました');
+        navigation.navigate('Home');
+      } else if (res.status === 401) {
+        alert('再ログインしてください');
+        navigation.navigate('Login');
+      } else {
+        alert('登録に失敗しました');
+      }
+    } catch (error) {
+      alert('登録に失敗しました');
+      console.log(error);
+    } finally {
+      setButtonLoading(false);
     }
   };
   return (
@@ -142,6 +219,7 @@ const Event: React.FC = () => {
                   placeholder='メモを入力'
                   onBlur={onBlur}
                   value={value}
+                  defaultValue={memo}
                   onChangeText={(value) => {
                     onChange(value);
                   }}
@@ -213,17 +291,21 @@ const Event: React.FC = () => {
             <Text>タイプ</Text>
           </View>
           <View style={{ borderBottomWidth: 0.5, borderColor: 'black', width: '50%', marginLeft: 10 }}>
-            <Button type='clear' titleStyle={{ color: 'black' }} title={selectedValue[selected]} onPress={() => setIsVisible(true)} />
+            <Button type='clear' titleStyle={{ color: 'black' }} title={selectedType[type]} onPress={() => setIsVisible(true)} />
           </View>
         </View>
         <View style={styles.button}>
-          <Button title='登録' titleStyle={{ fontWeight: 'bold' }} loading={loading} onPress={handleSubmit(onSubmit)} />
+          {isCreate ? (
+            <Button title='登録' titleStyle={{ fontWeight: 'bold' }} loading={buttonLoading} onPress={handleSubmit(onSubmit)} />
+          ) : (
+            <Button title='更新' titleStyle={{ fontWeight: 'bold' }} loading={buttonLoading} onPress={handleSubmit(onSubmitUpdate)} />
+          )}
         </View>
       </View>
       <Dialog isVisible={isVisible} overlayStyle={{ height: 350 }}>
         <View style={styles.selectedDialog}>
           <View style={{ justifyContent: 'center', width: 300 }}>
-            <Picker selectedValue={selected} onValueChange={(itemValue, itemIndex) => setSelected(itemValue)}>
+            <Picker selectedValue={type} onValueChange={(itemValue, itemIndex) => setType(itemValue)}>
               <Picker.Item label='貸す' value={0} />
               <Picker.Item label='借りる' value={1} />
             </Picker>

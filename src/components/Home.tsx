@@ -3,9 +3,11 @@ import { SafeAreaView, Text, View, StyleSheet, TouchableOpacity, FlatList, Image
 import { LoginCheck } from './LoginCheck';
 import { Icon, Dialog } from 'react-native-elements';
 import { memoApi } from '../api/memoApi';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
+import { useRecoilState } from 'recoil';
+import { UpdateFlgAtom } from '../recoil/UpdateFlgAtom';
 
 type Data = {
   id: number;
@@ -16,10 +18,13 @@ type Data = {
   memo: string;
   type: number;
 };
+
 const Home: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'Home'>>();
   const [loading, setLoading] = useState(false); // データ取得時のローディング表示
   const [data, setData] = useState<Data[]>([]); // メモ一覧
+  const [updateFlg, setUpdateFlg] = useRecoilState<boolean>(UpdateFlgAtom);
 
   const typeValue = ['貸し', '借り'];
 
@@ -27,34 +32,46 @@ const Home: React.FC = () => {
     navigation.navigate('Event');
   };
 
-  // イベント一覧を取得
-  useEffect(() => {
-    const getMemo = async () => {
-      setLoading(true);
-      try {
-        const res = await memoApi.getMemo();
-        if (res.status === 200) {
-          setData(res.data);
-        } else if (res.status === 401) {
-          alert('再ログインしてください');
-          navigation.navigate('Login');
-        } else {
-          alert('サーバーエラーが発生しました');
-        }
-        console.log(res);
-      } catch (error: any) {
+  const getMemo = async () => {
+    setLoading(true);
+    try {
+      const res = await memoApi.getAll();
+      if (res.status === 200) {
+        setData(res.data);
+      } else if (res.status === 401) {
+        alert('再ログインしてください');
+        navigation.navigate('Login');
+      } else {
         alert('サーバーエラーが発生しました');
-        console.log(error);
-      } finally {
-        setLoading(false);
       }
-    };
-    getMemo();
-  }, []);
+    } catch (error: any) {
+      alert('サーバーエラーが発生しました');
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // // イベント一覧を取得
+  // useEffect(() => {
+  //   getMemo();
+  // }, [navigation]);
+
+  // メモの登録・更新後に一覧を更新
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log(updateFlg);
+      if (updateFlg) {
+        console.log('Home screen was focused');
+        getMemo();
+        setUpdateFlg(false);
+      }
+    }, [])
+  );
 
   // イベント更新画面へ遷移
   const onPushed = (id: number) => {
-    console.log(id);
+    navigation.navigate('Event', { id: id });
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -75,7 +92,7 @@ const Home: React.FC = () => {
                 <View style={styles.listStyle}>
                   <View style={styles.listItemDate}>
                     <Text style={{ fontWeight: 'bold' }}>
-                      {item.date} 〜 {item.period}
+                      {item.date.split('T')[0]} 〜 {item.period.split('T')[0]}
                     </Text>
                   </View>
                   <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
