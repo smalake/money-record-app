@@ -11,7 +11,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { Picker } from '@react-native-picker/picker';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { UpdateFlgAtom } from '../recoil/UpdateFlgAtom';
 
 type FormData = {
@@ -114,7 +114,7 @@ const Event: React.FC = () => {
       if (res.status === 200) {
         setUpdateFlg(true);
         alert('登録しました');
-        navigation.navigate('Home');
+        navigation.push('List');
       } else if (res.status === 401) {
         alert('再ログインしてください');
         navigation.navigate('Login');
@@ -137,7 +137,7 @@ const Event: React.FC = () => {
       if (res.status === 200) {
         setUpdateFlg(true);
         alert('登録しました');
-        navigation.navigate('Home');
+        navigation.navigate('List');
       } else if (res.status === 401) {
         alert('再ログインしてください');
         navigation.navigate('Login');

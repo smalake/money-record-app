@@ -45,7 +45,7 @@ export const Login: React.FC = () => {
           await AsyncStorage.setItem('accessToken', res.data.accessToken);
           setTimeout(() => {
             setLoading(false);
-            navigation.navigate('Home');
+            navigation.navigate('List');
           }, 3000);
           break;
         case 400:
@@ -60,6 +60,8 @@ export const Login: React.FC = () => {
       setLoading(false);
       alert('ログインに失敗しました');
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
