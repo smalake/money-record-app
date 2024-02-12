@@ -54,9 +54,9 @@ const List: React.FC = () => {
   };
 
   // イベント一覧を取得
-  // useEffect(() => {
-  //   getMemo();
-  // }, []);
+  useEffect(() => {
+    getMemo();
+  }, []);
 
   // メモの登録・更新後に一覧を更新
   useFocusEffect(
