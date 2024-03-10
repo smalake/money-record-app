@@ -1,15 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { Button, Input } from 'react-native-elements';
-import { SafeAreaView, StyleSheet, BackHandler, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { loginValidation } from '../util/Validation';
-import { authApi } from '../api/authApi';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from "expo-status-bar";
+import { ActivityIndicator } from "react-native"; // ActivityIndicatorを追加
+import { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Button, Input } from "react-native-elements";
+import { SafeAreaView, StyleSheet, BackHandler, Text, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../App";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { loginValidation } from "../util/Validation";
+import { authApi } from "../api/authApi";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type FormData = {
   email: string;
@@ -31,7 +32,7 @@ export const Login: React.FC = () => {
     const backAction = () => {
       return true;
     };
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => backHandler.remove();
   });
 
@@ -42,79 +43,82 @@ export const Login: React.FC = () => {
       const res = await authApi.loginMail(data);
       switch (res.status) {
         case 200:
-          await AsyncStorage.setItem('accessToken', res.data.accessToken);
+          await AsyncStorage.setItem("accessToken", res.data.accessToken);
           setTimeout(() => {
             setLoading(false);
-            navigation.navigate('List');
+            navigation.navigate("List");
           }, 3000);
           break;
         case 400:
-          alert('リクエストが不正です');
+          alert("リクエストが不正です");
         case 401:
-          alert('メールアドレスまたはパスワードが間違っています');
+          alert("メールアドレスまたはパスワードが間違っています");
           break;
         default:
-          alert('サーバーエラーが発生しました');
+          alert("サーバーエラーが発生しました");
       }
     } catch (error) {
       setLoading(false);
-      alert('ログインに失敗しました');
+      alert("ログインに失敗しました");
       console.log(error);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
-        <Controller
-          control={control}
-          name='email'
-          rules={{ required: true }}
-          defaultValue=''
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              placeholder='メールアドレス'
-              leftIcon={{ type: 'font-awesome', name: 'envelope', size: 16 }}
-              keyboardType='email-address'
-              value={value}
-              onBlur={onBlur}
-              onChangeText={(value) => onChange(value)}
+      {loading ? (
+        <ActivityIndicator size="large" color="deepskyblue" />
+      ) : (
+        <>
+          <View style={styles.form}>
+            <Controller
+              control={control}
+              name="email"
+              rules={{ required: true }}
+              defaultValue=""
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  placeholder="メールアドレス"
+                  leftIcon={{ type: "font-awesome", name: "envelope", size: 16 }}
+                  keyboardType="email-address"
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={(value) => onChange(value)}
+                />
+              )}
             />
-          )}
-        />
-      </View>
-      <View style={styles.error}>{errors.email && <Text style={{ color: 'red', textAlign: 'left' }}>{errors.email.message}</Text>}</View>
-      <View style={styles.form}>
-        <Controller
-          control={control}
-          name='password'
-          rules={{ required: true }}
-          defaultValue=''
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              placeholder='パスワード'
-              keyboardType='visible-password'
-              leftIcon={{ type: 'font-awesome', name: 'lock' }}
-              secureTextEntry={true}
-              value={value}
-              onBlur={onBlur}
-              onChangeText={(value) => onChange(value)}
+          </View>
+          <View style={styles.error}>{errors.email && <Text style={{ color: "red", textAlign: "left" }}>{errors.email.message}</Text>}</View>
+          <View style={styles.form}>
+            <Controller
+              control={control}
+              name="password"
+              rules={{ required: true }}
+              defaultValue=""
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  placeholder="パスワード"
+                  keyboardType="visible-password"
+                  leftIcon={{ type: "font-awesome", name: "lock" }}
+                  secureTextEntry={true}
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={(value) => onChange(value)}
+                />
+              )}
             />
-          )}
-        />
-      </View>
-      <View style={styles.error}>{errors.password && <Text style={{ color: 'red' }}>{errors.password.message}</Text>}</View>
+          </View>
+          <View style={styles.error}>{errors.password && <Text style={{ color: "red" }}>{errors.password.message}</Text>}</View>
 
-      <View style={styles.button}>
-        <Button title='ログイン' loading={loading} onPress={handleSubmit(onSubmit)} />
-      </View>
-      <View style={styles.button}>
-        <Button title='新規登録' type='outline' onPress={() => navigation.navigate('Register')} />
-      </View>
-
-      <StatusBar style='auto' />
+          <View style={styles.button}>
+            <Button title="ログイン" loading={loading} onPress={handleSubmit(onSubmit)} />
+          </View>
+          <View style={styles.button}>
+            <Button title="新規登録" type="outline" onPress={() => navigation.navigate("Register")} />
+          </View>
+        </>
+      )}
+      <StatusBar style="auto" />
     </SafeAreaView>
   );
 };
@@ -122,23 +126,23 @@ export const Login: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   form: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '80%',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "80%",
   },
   error: {
     marginBottom: 10,
-    width: '75%',
+    width: "75%",
   },
   button: {
     marginTop: 10,
-    width: '50%',
+    width: "50%",
     marginBottom: 20,
   },
 });
